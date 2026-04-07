@@ -1,24 +1,12 @@
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI
+from app.routes import upload, query
+import warnings
+
+# Ignore only specific warnings
+warnings.filterwarnings("ignore", category=UserWarning)
+warnings.filterwarnings("ignore", category=FutureWarning)
 
 app = FastAPI()
 
-@app.get("/")
-def root():
-    return {"message": "API is running"}
-
-# ✅ Lazy import for upload
-@app.post("/upload")
-async def upload_file(file: UploadFile = File(...)):
-    from services.pdf_processor import process_pdf  # lazy import
-
-    content = await file.read()
-    result = process_pdf(content)
-
-    return {"message": "File processed successfully"}
-
-# ✅ Lazy import for query
-@app.get("/query")
-def query(q: str):
-    from services.rag_pipeline import generate_answer  # lazy import
-
-    return generate_answer(q)
+app.include_router(upload.router)
+app.include_router(query.router)
